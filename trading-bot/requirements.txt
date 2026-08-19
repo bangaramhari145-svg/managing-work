@@ -1,0 +1,10 @@
+requests
+python-dotenv
+schedule
+smartapi-python
+pyotp
+logzero
+websocket-client
+pycryptodome
+matplotlib
+pandas

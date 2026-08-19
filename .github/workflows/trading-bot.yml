@@ -1,0 +1,46 @@
+name: Trading bot (Angel One)
+
+on:
+  workflow_dispatch: {}
+  schedule:
+    - cron: '*/5 * * * *'  # every 5 minutes — adjust as needed
+
+jobs:
+  run-trading-bot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r trading-bot/requirements.txt
+
+      - name: Run trading bot (one-off)
+        env:
+          ANGEL_BASE_URL: ${{ secrets.ANGEL_BASE_URL }}
+          ANGEL_CLIENT_ID: ${{ secrets.ANGEL_CLIENT_ID }}
+          ANGEL_CLIENT_SECRET: ${{ secrets.ANGEL_CLIENT_SECRET }}
+          ANGEL_ACCESS_TOKEN: ${{ secrets.ANGEL_ACCESS_TOKEN }}
+          ANGEL_REFRESH_TOKEN: ${{ secrets.ANGEL_REFRESH_TOKEN }}
+          ANGEL_ACCOUNT_ID: ${{ secrets.ANGEL_ACCOUNT_ID }}
+          PAPER_MODE: ${{ secrets.PAPER_MODE }}
+          TRADE_SYMBOLS: ${{ secrets.TRADE_SYMBOLS }}
+          ORDER_QUANTITY: ${{ secrets.ORDER_QUANTITY }}
+        run: |
+          python -m trading_bot.main --once
+
+      - name: Run NIFTY-FUT live scan and save charts
+        env:
+          ANGEL_CLIENT_ID: ${{ secrets.ANGEL_CLIENT_ID }}
+          ANGEL_ACCESS_TOKEN: ${{ secrets.ANGEL_ACCESS_TOKEN }}
+          ANGEL_REFRESH_TOKEN: ${{ secrets.ANGEL_REFRESH_TOKEN }}
+          ANGEL_ACCOUNT_ID: ${{ secrets.ANGEL_ACCOUNT_ID }}
+        run: |
+          python trading-bot/scripts/live_scan.py
